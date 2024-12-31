@@ -1,33 +1,46 @@
 ﻿using PS4UpdateTools.plugins;
+using PS4UpdateTools.sys;
 using System.CommandLine;
+using System.CommandLine.Parsing;
 
 namespace Program
 {
     class Program
     {
-        private const string appVersion = "0.0.1a";
-
-        static async Task Main(string[] args)
+        public static async Task Main(string[] args)
         {
             var rootCommand = new RootCommand("Universal tools to work with PS4 update file.");
-            
+
             // add all commands
-            rootCommand.AddCommand(CreateCommand_Extract());
+            rootCommand.AddCommand(CreateCommand_SLB2Extract());
             rootCommand.AddCommand(CreateCommand_MakeSLB2());
             rootCommand.AddCommand(CreateCommand_ENVDecrypt());
             rootCommand.AddCommand(CreateCommand_ENVEncrypt());
-            rootCommand.AddCommand(CreateCommand_EulaSplit());
 
-            rootCommand.SetHandler(() =>
+            rootCommand.AddCommand(CreateCommand_RCOExtract());
+
+            rootCommand.AddCommand(CreateCommand_EulaSplit());
+            rootCommand.AddCommand(CreateCommand_CERTSplitter());
+            rootCommand.AddCommand(CreateCommand_SFOInform());
+
+            rootCommand.AddCommand(CreateCommand_VAG2WAV());
+            rootCommand.AddCommand(CreateCommand_WAV2VAG());
+
+            // add all arguments
+            Argument log = CreateArgumehnt_WriteLog();
+            rootCommand.AddArgument(log);
+
+            if (args.Length == 0)
             {
-                Console.WriteLine($"Application Version: {appVersion}");
-            });
+                args = new[] { "--help" }; // stupid way
+            }
+
             await rootCommand.InvokeAsync(args);
         }
 
-        private static Command CreateCommand_Extract()
+        private static Command CreateCommand_SLB2Extract()
         {
-            var command = new Command("extract", "Extracts a SLB2 or PUP file.");
+            var command = new Command("slb2extract", "Extracts a SLB2 or PUP file.");
 
             var inArg = new Option<string>("--in", description: "The input file."){IsRequired = true};
             command.AddOption(inArg);
@@ -35,7 +48,7 @@ namespace Program
             var outArg = new Option<string>("--out", description: "The output directory.") { IsRequired = false };
             command.AddOption(outArg);
 
-            command.SetHandler((string inputFile, string outputDirectory) => Extractor.ExtractEntry(inputFile, outputDirectory), inArg, outArg);
+            command.SetHandler((string inputFile, string outputDirectory) => SLB2.ExtractEntry(inputFile, outputDirectory), inArg, outArg);
             return command;
         }
 
@@ -56,7 +69,7 @@ namespace Program
             var outArg = new Option<string>("--out", description: "The output file.") { IsRequired = false };
             command.AddOption(outArg);
 
-            command.SetHandler((string inputDirectory, string version, string signatureFile, string outputFile) => Extractor.MakeSLB2File(inputDirectory, int.Parse(version), signatureFile, outputFile), inArg, inVers, sigFile, outArg);
+            command.SetHandler((string inputDirectory, string version, string signatureFile, string outputFile) => SLB2.MakeSLB2File(inputDirectory, int.Parse(version), signatureFile, outputFile), inArg, inVers, sigFile, outArg);
             return command;
         }
 
@@ -116,6 +129,83 @@ namespace Program
 
             command.SetHandler((string inputFile, string outputFolder) => Eula.ReadEulaFile(inputFile, outputFolder), inArg, outArg);
             return command;
+        }
+
+        private static Command CreateCommand_SFOInform()
+        {
+            var command = new Command("sfoinfo", "Prints information in the console about param.sfo. [UNFINISHED]");
+
+            var inArg = new Option<string>("--in", description: "The input file.") { IsRequired = true };
+            command.AddOption(inArg);
+
+            command.SetHandler((string inputFile) => SFO.ViewPSOInformation(inputFile), inArg);
+            return command;
+        }
+
+        private static Command CreateCommand_RCOExtract()
+        {
+            var command = new Command("rcoextract", "Extracts a RCO (Resources Container Object File) file. [UNFINISHED]");
+
+            var inArg = new Option<string>("--in", description: "The input file.") { IsRequired = true };
+            command.AddOption(inArg);
+
+            var outArg = new Option<string>("--out", description: "The output folder.") { IsRequired = false };
+            command.AddOption(outArg);
+
+            command.SetHandler((string inputFile, string outpuDirectory) => RCO.ExtractResourceFile(inputFile, outpuDirectory), inArg, outArg);
+            return command;
+        }
+
+        private static Command CreateCommand_CERTSplitter()
+        {
+            var command = new Command("certsplit", "Splits the certificate file in files.");
+
+            var inArg = new Option<string>("--in", description: "The input file.") { IsRequired = true };
+            command.AddOption(inArg);
+
+            var outArg = new Option<string>("--out", description: "The output folder.") { IsRequired = false };
+            command.AddOption(outArg);
+
+            command.SetHandler((string inputFile, string outpuDirectory) => Eula.SplitCertificates(inputFile, outpuDirectory), inArg, outArg);
+            return command;
+        }
+
+        private static Command CreateCommand_VAG2WAV()
+        {
+            var command = new Command("vag2wav", "Converts VAG to WAV. [UNFINISHED]");
+
+            var inArg = new Option<string>("--in", description: "The input file.") { IsRequired = true };
+            command.AddOption(inArg);
+
+            var outArg = new Option<string>("--out", description: "The output file.") { IsRequired = false };
+            command.AddOption(outArg);
+
+            command.SetHandler((string inputFile, string outputFile) => VAG.Vag2Wav(inputFile, outputFile), inArg, outArg);
+            return command;
+        }
+
+        private static Command CreateCommand_WAV2VAG()
+        {
+            var command = new Command("wav2vag", "Converts WAV to VAG. [UNFINISHED]");
+
+            var inArg = new Option<string>("--in", description: "The input file.") { IsRequired = true };
+            command.AddOption(inArg);
+
+            var outArg = new Option<string>("--out", description: "The output file.") { IsRequired = false };
+            command.AddOption(outArg);
+
+            command.SetHandler((string inputFile, string outputFile) => VAG.Wav2Vag(inputFile, outputFile), inArg, outArg);
+            return command;
+        }
+
+        private static Argument CreateArgumehnt_WriteLog()
+        {
+            var argument = new Argument<string>("--log", "Logs the console output in a file")
+            {
+                IsHidden = true
+            };
+
+            return argument;
         }
     }
 }

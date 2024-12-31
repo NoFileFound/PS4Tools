@@ -4,9 +4,9 @@ using System.Collections;
 
 namespace PS4UpdateTools.plugins
 {
-    internal class Extractor
+    internal class SLB2
     {
-        public static bool ExtractEntry(string inputFile, string outputDirectory)
+        public static void ExtractEntry(string inputFile, string outputDirectory)
         {
             outputDirectory ??= Directory.GetCurrentDirectory();
             if(!Directory.Exists(outputDirectory))
@@ -18,16 +18,16 @@ namespace PS4UpdateTools.plugins
             using (BinaryReader reader = new BinaryReader(fs))
             {
                 string magic = new(reader.ReadChars(4)); // magic
-                Console.WriteLine($"[+] Magic: {magic}");
+                Logger.LogMsg($"[+] Magic: {magic}");
 
                 ulong version = reader.ReadUInt64(); // version
-                Console.WriteLine($"[+] Version: {Utils.ToHex(version)}");
+                Logger.LogMsg($"[+] Version: {Utils.ToHex(version)}");
 
                 uint fileCount = reader.ReadUInt32(); // total files
-                Console.WriteLine($"[+] FileCount: {Utils.ToHex(fileCount)}");
+                Logger.LogMsg($"[+] FileCount: {Utils.ToHex(fileCount)}");
 
                 uint blockCount = reader.ReadUInt32(); // total blocks
-                Console.WriteLine($"[+] BlockCount: {Utils.ToHex(blockCount)}");
+                Logger.LogMsg($"[+] BlockCount: {Utils.ToHex(blockCount)}");
 
                 reader.ReadBytes(12); // reserved
 
@@ -58,13 +58,12 @@ namespace PS4UpdateTools.plugins
                     }
 
                     File.WriteAllBytes(Path.Combine(outputDirectory, fileEntries[i].fileName), buffer);
-                    Console.WriteLine($"[{i + 1}] File -> {fileEntries[i].fileName} | Sz -> {Utils.GetFormatFromBytes(fileEntries[i].contentSize)}");
+                    Logger.LogMsg($"[{i + 1}] File -> {fileEntries[i].fileName} | Sz -> {Utils.GetFormatFromBytes(fileEntries[i].contentSize)}");
                 }
             }
-            return true;
         }
 
-        public static bool MakeSLB2File(string inputDirectory, int version, string signatureFile, string outputFile)
+        public static void MakeSLB2File(string inputDirectory, int version, string signatureFile, string outputFile)
         {
             if (outputFile == null)
                 outputFile = "out.slb2";
@@ -138,7 +137,7 @@ namespace PS4UpdateTools.plugins
                     }
                 }
             }
-            return true;
+            Logger.LogMsg("Done!");
         }
 
         private class Entry

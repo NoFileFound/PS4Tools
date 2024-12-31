@@ -1,5 +1,17 @@
-﻿using System;
+﻿using PS4UpdateTools.sys;
+using System;
 using System.Security.Cryptography;
+
+/**
+ * PS4 ENV File Decryptor by SocraticBliss(R)
+ * 
+ * Special Thanks to IDC for finding the Buffers/IV/Flag and implementation suggestions
+ * Huge thanks to Flatz for the proper decryption technique
+ * 
+ * ... Oh and I guess Zecoxao as well
+ * 
+ * Original code: https://github.com/SocraticBliss/ps4_env_decryptor/blob/master/ps4_env_decryptor.py
+*/
 
 namespace PS4UpdateTools.plugins
 {

@@ -1,4 +1,6 @@
-﻿namespace PS4UpdateTools.sys
+﻿using System.Collections;
+
+namespace PS4UpdateTools.sys
 {
     internal class Utils
     {
@@ -23,6 +25,11 @@
             }
 
             return string.Format("{0:0.##} {1}", size, orders[orderIndex]);
+        }
+
+        public static string GetHexArrayString(byte[] bytes)
+        {
+            return string.Join(" ", bytes.Select(b => b.ToString("X2")));
         }
     }
 }
